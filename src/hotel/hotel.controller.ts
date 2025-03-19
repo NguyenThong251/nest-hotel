@@ -1,16 +1,21 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
+  HttpStatus,
   Param,
   Post,
   Query,
+  UploadedFile,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { CreateHotelDto } from './dto/create-hotel.dto';
 import { HotelResponseDto } from './dto/hotel-response.dto';
 import { HotelService } from './hotel.service';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('hotels')
 export class HotelController {
@@ -59,5 +64,18 @@ export class HotelController {
     @Query('lang') lang: 'en' | 'vi' = 'en',
   ): Promise<HotelResponseDto> {
     return this.hotelService.create(hotelData);
+  }
+
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file')) // 'file' là tên field trong form-data
+  async importFromExcel(
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<string> {
+    if (!file) {
+      throw new BadRequestException('Vui lòng upload file Excel');
+    }
+    const result = await this.hotelService.importFromExcel(file);
+    console.log(result);
+    return result;
   }
 }
