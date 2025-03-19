@@ -12,10 +12,13 @@ export class User {
   @Column()
   password: string;
 
+  @Column({ default: 'user' })
+  role: string;
+
+  @Column({ default: false })
+  isVerified: boolean;
   @BeforeInsert()
   async hashPassword() {
     this.password = await bcrypt.hash(this.password, 10);
   }
-  @Column({ default: 'user' })
-  role: string;
 }
