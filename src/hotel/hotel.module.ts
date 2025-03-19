@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { HotelService } from './hotel.service';
 import { HotelController } from './hotel.controller';
 import { Hotel } from './entities/hotel.entity';
@@ -7,6 +12,9 @@ import { HotelTranslation } from './entities/hotel-translation.entity';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { AdminMiddleware } from '@app/middleware/admin.middleware';
+import { JwtModule } from '@nestjs/jwt';
+import { jwtConstants } from '@app/user/constants';
 
 @Module({
   imports: [
@@ -34,9 +42,19 @@ import { extname } from 'path';
         }
       },
     }),
+    JwtModule.register({
+      secret: jwtConstants.secret, // Phải khớp với AuthModule
+    }),
   ],
   controllers: [HotelController],
   providers: [HotelService],
   exports: [HotelService],
 })
-export class HotelModule {}
+export class HotelModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(AdminMiddleware)
+      .forRoutes({ path: 'hotels/import', method: RequestMethod.POST });
+  }
+}
+// export class HotelModule {}

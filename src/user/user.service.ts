@@ -40,7 +40,7 @@ export class UserService {
   }
 
   async login(user: User): Promise<UserResponseDto> {
-    const payload = { email: user.email, sub: user.id };
+    const payload = { email: user.email, sub: user.id, role: user.role };
     const access_token = this.jwtService.sign(payload);
     return new UserResponseDto({
       id: user.id,
